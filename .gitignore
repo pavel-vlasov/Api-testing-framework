@@ -1,0 +1,5 @@
+.gradle/
+**/build/
+**/allure-results/
+/allure-report/
+/allure-results/
