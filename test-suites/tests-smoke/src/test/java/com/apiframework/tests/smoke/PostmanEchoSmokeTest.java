@@ -29,7 +29,7 @@ public class PostmanEchoSmokeTest extends BaseApiTest {
             QueryRoundtripResult roundtrip = echoFlow.verifyQueryRoundtrip("suite", "smoke");
             EchoAssertions.assertQueryRoundtrip(roundtrip);
         } catch (Throwable ex) {
-            throw new SkipException("Postman Echo is unavailable", ex);
+            throw new SkipException("Skipped: " + ex.getMessage(), ex);
         }
     }
 }

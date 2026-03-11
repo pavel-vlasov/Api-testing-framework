@@ -41,7 +41,7 @@ public class PostmanEchoRegressionTest extends BaseApiTest {
             PayloadRoundtripResult result = echoFlow.sendPayloadAndVerifyRoundtrip(payload);
             EchoAssertions.assertPayloadRoundtrip(result);
         } catch (Throwable ex) {
-            throw new SkipException("Postman Echo is unavailable", ex);
+            throw new SkipException("Skipped: " + ex.getMessage(), ex);
         }
     }
 }

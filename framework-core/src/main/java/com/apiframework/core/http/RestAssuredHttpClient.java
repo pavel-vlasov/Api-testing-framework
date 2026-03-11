@@ -8,6 +8,7 @@ import com.apiframework.core.model.ApiRequest;
 import com.apiframework.core.model.ApiResponse;
 import com.apiframework.core.model.HttpMethod;
 import com.apiframework.core.model.HttpRetryPolicy;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -132,7 +133,7 @@ public final class RestAssuredHttpClient implements HttpClient {
         }
         try {
             return objectMapper.readValue(rawBody, responseType);
-        } catch (Exception exception) {
+        } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Unable to deserialize response body", exception);
         }
     }

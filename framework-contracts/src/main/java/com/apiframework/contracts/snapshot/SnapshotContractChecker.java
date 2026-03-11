@@ -18,6 +18,25 @@ public final class SnapshotContractChecker {
         return new SnapshotContractChecker(Path.of("framework-contracts", "src", "main", "resources", "snapshots"));
     }
 
+    /**
+     * Creates a checker that resolves snapshots relative to the Gradle root project directory.
+     * Walks up from user.dir until it finds settings.gradle.kts, then resolves the standard
+     * snapshot path from there. Use this from test suites whose working directory differs
+     * from the root (e.g. test-suites/tests-integration/).
+     */
+    public static SnapshotContractChecker fromRootDir() {
+        Path current = Path.of(System.getProperty("user.dir"));
+        while (current != null && !Files.exists(current.resolve("settings.gradle.kts"))) {
+            current = current.getParent();
+        }
+        if (current == null) {
+            return defaultChecker();
+        }
+        return new SnapshotContractChecker(
+            current.resolve("framework-contracts").resolve("src")
+                .resolve("main").resolve("resources").resolve("snapshots"));
+    }
+
     public void assertMatchesSnapshot(String snapshotName, String actualJson, boolean updateSnapshots) {
         Path snapshotPath = snapshotsRoot.resolve(snapshotName + ".json");
 

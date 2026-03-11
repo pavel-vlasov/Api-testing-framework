@@ -88,8 +88,6 @@ Run all tests:
 ./gradlew test
 ```
 
-> Note: this repository keeps wrapper scripts and properties, but excludes `gradle/wrapper/gradle-wrapper.jar` from VCS to avoid binary artifacts in PRs. Regenerate it locally with `gradle wrapper` if needed.
-
 Run a specific suite module:
 
 ```bash

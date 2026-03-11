@@ -1,6 +1,7 @@
 package com.apiframework.messaging;
 
 import com.apiframework.core.json.JacksonProvider;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class MessagePayloadMapper {
@@ -13,7 +14,7 @@ public final class MessagePayloadMapper {
     public <T> T map(String payload, Class<T> targetClass) {
         try {
             return objectMapper.readValue(payload, targetClass);
-        } catch (Exception exception) {
+        } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Unable to map message payload", exception);
         }
     }

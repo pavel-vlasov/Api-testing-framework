@@ -3,6 +3,3 @@
 **/allure-results/
 /allure-report/
 /allure-results/
-
-# Avoid committing Gradle wrapper binary in this repository
-/gradle/wrapper/gradle-wrapper.jar

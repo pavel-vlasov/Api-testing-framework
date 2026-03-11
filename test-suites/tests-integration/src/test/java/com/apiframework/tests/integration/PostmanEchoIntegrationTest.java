@@ -22,7 +22,7 @@ public class PostmanEchoIntegrationTest extends BaseApiTest {
         super.initHttpClient();
         this.echoFlow = new EchoFlow(new PostmanEchoApi(httpClient()));
         this.schemaValidator = new JsonSchemaContractValidator();
-        this.snapshotChecker = SnapshotContractChecker.defaultChecker();
+        this.snapshotChecker = SnapshotContractChecker.fromRootDir();
     }
 
     @Override
@@ -40,7 +40,7 @@ public class PostmanEchoIntegrationTest extends BaseApiTest {
             schemaValidator.assertMatchesSchema(contractBody, "schemas/postman-echo-get.schema.json");
             snapshotChecker.assertMatchesSnapshot("postman-echo-get", contractBody, false);
         } catch (Throwable ex) {
-            throw new SkipException("Postman Echo is unavailable", ex);
+            throw new SkipException("Skipped: " + ex.getMessage(), ex);
         }
     }
 
