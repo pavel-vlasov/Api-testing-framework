@@ -1,0 +1,6 @@
+{
+  "args": {
+    "suite": "integration"
+  },
+  "url": "https://postman-echo.com/get?suite=integration"
+}

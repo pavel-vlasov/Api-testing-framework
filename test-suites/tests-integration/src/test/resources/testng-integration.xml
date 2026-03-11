@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Integration Suite" verbose="1">
+    <listeners>
+        <listener class-name="com.apiframework.testng.retry.RetryAnnotationTransformer"/>
+        <listener class-name="com.apiframework.testng.retry.RetryReportingListener"/>
+        <listener class-name="com.apiframework.reporting.allure.AllureTestNgListener"/>
+    </listeners>
+    <test name="Integration API Tests">
+        <classes>
+            <class name="com.apiframework.tests.integration.PostmanEchoIntegrationTest"/>
+        </classes>
+    </test>
+</suite>

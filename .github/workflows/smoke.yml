@@ -1,0 +1,23 @@
+name: Smoke API Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v3
+      - name: Run smoke suite (PR sanity mode, no live API)
+        if: github.event_name == 'pull_request'
+        run: ./gradlew :test-suites:smoke:test -Dframework.profile=dev -Dframework.runLiveTests=false
+      - name: Run smoke suite (manual live mode)
+        if: github.event_name == 'workflow_dispatch'
+        run: ./gradlew :test-suites:smoke:test -Dframework.profile=dev -Dframework.runLiveTests=true

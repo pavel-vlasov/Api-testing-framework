@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["args", "url"],
+  "properties": {
+    "args": {
+      "type": "object",
+      "required": ["suite"],
+      "properties": {
+        "suite": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "url": {"type": "string"}
+  },
+  "additionalProperties": false
+}
