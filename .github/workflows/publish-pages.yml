@@ -1,0 +1,103 @@
+name: Publish Allure Pages
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Smoke API Tests
+      - Regression API Tests
+      - Integration API Tests
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+jobs:
+  build-site:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download latest smoke site artifact
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: smoke.yml
+          workflow_conclusion: success
+          branch: main
+          name: site-allure-smoke
+          path: site/allure/smoke
+          if_no_artifact_found: warn
+
+      - name: Download latest regression site artifact
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: regression.yml
+          workflow_conclusion: success
+          branch: main
+          name: site-allure-regression
+          path: site/allure/regression
+          if_no_artifact_found: warn
+
+      - name: Download latest integration site artifact
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: integration.yml
+          workflow_conclusion: success
+          branch: main
+          name: site-allure-integration
+          path: site/allure/integration
+          if_no_artifact_found: warn
+
+      - name: Create landing page
+        run: |
+          mkdir -p site
+          cat <<'HTML' > site/index.html
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>API Test Reports</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+              ul { padding-left: 1.2rem; }
+            </style>
+          </head>
+          <body>
+            <h1>Allure reports</h1>
+            <ul>
+              <li><a href="./allure/smoke/">Smoke</a></li>
+              <li><a href="./allure/regression/">Regression</a></li>
+              <li><a href="./allure/integration/">Integration</a></li>
+            </ul>
+            <p>Published at: ${PUBLISHED_AT}</p>
+          </body>
+          </html>
+          HTML
+          PUBLISHED_AT="$(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          sed -i "s|\${PUBLISHED_AT}|${PUBLISHED_AT}|g" site/index.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build-site
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

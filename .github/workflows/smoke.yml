@@ -4,20 +4,61 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore smoke history from latest smoke artifact
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: smoke.yml
+          workflow_conclusion: success
+          branch: main
+          name: site-allure-smoke
+          path: .history/smoke
+          if_no_artifact_found: warn
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v3
-      - name: Run smoke suite (PR sanity mode, no live API)
-        if: github.event_name == 'pull_request'
-        run: ./gradlew :test-suites:smoke:test -Dframework.profile=dev -Dframework.runLiveTests=false
-      - name: Run smoke suite (manual live mode)
-        if: github.event_name == 'workflow_dispatch'
+
+      - name: Run smoke suite
         run: ./gradlew :test-suites:smoke:test -Dframework.profile=dev -Dframework.runLiveTests=true
+
+      - name: Inject smoke history
+        if: always()
+        run: |
+          mkdir -p build/allure-results
+          if [ -d ".history/smoke/history" ]; then
+            cp -R .history/smoke/history build/allure-results/history
+          fi
+
+      - name: Build Allure report
+        if: always()
+        run: ./gradlew allureReport
+
+      - name: Package smoke site artifact
+        if: always()
+        run: |
+          mkdir -p site/allure/smoke
+          cp -R build/reports/allure-report/allureReport/. site/allure/smoke/
+
+      - name: Upload smoke site artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-allure-smoke
+          path: site/allure/smoke
+          if-no-files-found: warn

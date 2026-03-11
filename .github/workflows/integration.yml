@@ -3,15 +3,57 @@ name: Integration API Tests
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   integration:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore integration history from latest integration artifact
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: integration.yml
+          workflow_conclusion: success
+          branch: main
+          name: site-allure-integration
+          path: .history/integration
+          if_no_artifact_found: warn
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v3
+
       - name: Run integration suite
         run: ./gradlew :test-suites:integration:test -Dframework.profile=stage -Dframework.runLiveTests=true
+
+      - name: Inject integration history
+        if: always()
+        run: |
+          mkdir -p build/allure-results
+          if [ -d ".history/integration/history" ]; then
+            cp -R .history/integration/history build/allure-results/history
+          fi
+
+      - name: Build Allure report
+        if: always()
+        run: ./gradlew allureReport
+
+      - name: Package integration site artifact
+        if: always()
+        run: |
+          mkdir -p site/allure/integration
+          cp -R build/reports/allure-report/allureReport/. site/allure/integration/
+
+      - name: Upload integration site artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-allure-integration
+          path: site/allure/integration
+          if-no-files-found: warn

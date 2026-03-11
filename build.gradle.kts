@@ -21,6 +21,7 @@ allprojects {
 }
 
 val aggregatedAllureResultsDir = layout.buildDirectory.dir("allure-results")
+val previousAllureHistoryDir = layout.buildDirectory.dir("reports/allure-report/allureReport/history")
 val suiteAllureResultDirs = listOf(
     layout.projectDirectory.dir("test-suites/tests-smoke/allure-results"),
     layout.projectDirectory.dir("test-suites/tests-regression/allure-results"),
@@ -44,6 +45,8 @@ tasks.register("collectAllureResults") {
 
     doLast {
         val outputDir = aggregatedAllureResultsDir.get().asFile
+        val previousHistoryDir = previousAllureHistoryDir.get().asFile
+
         delete(outputDir)
         outputDir.mkdirs()
 
@@ -51,6 +54,14 @@ tasks.register("collectAllureResults") {
             suiteAllureResultDirs.forEach { from(it) }
             into(outputDir)
             includeEmptyDirs = false
+        }
+
+        if (previousHistoryDir.exists()) {
+            copy {
+                from(previousHistoryDir)
+                into(outputDir.resolve("history"))
+                includeEmptyDirs = false
+            }
         }
     }
 }
