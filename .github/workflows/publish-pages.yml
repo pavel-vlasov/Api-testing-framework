@@ -2,59 +2,124 @@ name: Publish Allure Pages
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - Smoke API Tests
-      - Regression API Tests
-      - Integration API Tests
-    types:
-      - completed
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
-  actions: read
 
 jobs:
-  build-site:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+  smoke:
     runs-on: ubuntu-latest
     steps:
-      - name: Download latest smoke site artifact
-        continue-on-error: true
-        uses: dawidd6/action-download-artifact@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          workflow: smoke.yml
-          workflow_conclusion: success
-          branch: main
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Run smoke suite
+        run: ./gradlew :test-suites:smoke:test -Dframework.profile=dev -Dframework.runLiveTests=true
+
+      - name: Build smoke Allure report
+        run: ./gradlew allureReport
+
+      - name: Package smoke site artifact
+        run: |
+          mkdir -p site/allure/smoke
+          cp -R build/reports/allure-report/allureReport/. site/allure/smoke/
+
+      - name: Upload smoke site artifact
+        uses: actions/upload-artifact@v4
+        with:
           name: site-allure-smoke
           path: site/allure/smoke
-          if_no_artifact_found: warn
+          if-no-files-found: warn
 
-      - name: Download latest regression site artifact
-        continue-on-error: true
-        uses: dawidd6/action-download-artifact@v6
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          workflow: regression.yml
-          workflow_conclusion: success
-          branch: main
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Run regression suite
+        run: ./gradlew :test-suites:regression:test -Dframework.profile=stage -Dframework.runLiveTests=true -Dtest.retry.maxRetries=1
+
+      - name: Build regression Allure report
+        run: ./gradlew allureReport
+
+      - name: Package regression site artifact
+        run: |
+          mkdir -p site/allure/regression
+          cp -R build/reports/allure-report/allureReport/. site/allure/regression/
+
+      - name: Upload regression site artifact
+        uses: actions/upload-artifact@v4
+        with:
           name: site-allure-regression
           path: site/allure/regression
-          if_no_artifact_found: warn
+          if-no-files-found: warn
 
-      - name: Download latest integration site artifact
-        continue-on-error: true
-        uses: dawidd6/action-download-artifact@v6
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          workflow: integration.yml
-          workflow_conclusion: success
-          branch: main
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Run integration suite
+        run: ./gradlew :test-suites:integration:test -Dframework.profile=stage -Dframework.runLiveTests=true
+
+      - name: Build integration Allure report
+        run: ./gradlew allureReport
+
+      - name: Package integration site artifact
+        run: |
+          mkdir -p site/allure/integration
+          cp -R build/reports/allure-report/allureReport/. site/allure/integration/
+
+      - name: Upload integration site artifact
+        uses: actions/upload-artifact@v4
+        with:
           name: site-allure-integration
           path: site/allure/integration
-          if_no_artifact_found: warn
+          if-no-files-found: warn
 
-      - name: Create landing page
+  publish-pages:
+    needs:
+      - smoke
+      - regression
+      - integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download smoke artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-allure-smoke
+          path: site/allure/smoke
+
+      - name: Download regression artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-allure-regression
+          path: site/allure/regression
+
+      - name: Download integration artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-allure-integration
+          path: site/allure/integration
+
+      - name: Create root landing page
         run: |
           mkdir -p site
           cat <<'HTML' > site/index.html
@@ -64,10 +129,6 @@ jobs:
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>API Test Reports</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
-              ul { padding-left: 1.2rem; }
-            </style>
           </head>
           <body>
             <h1>Allure reports</h1>
@@ -76,12 +137,9 @@ jobs:
               <li><a href="./allure/regression/">Regression</a></li>
               <li><a href="./allure/integration/">Integration</a></li>
             </ul>
-            <p>Published at: ${PUBLISHED_AT}</p>
           </body>
           </html>
           HTML
-          PUBLISHED_AT="$(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          sed -i "s|\${PUBLISHED_AT}|${PUBLISHED_AT}|g" site/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -91,8 +149,8 @@ jobs:
         with:
           path: site
 
-  deploy:
-    needs: build-site
+  deploy-pages:
+    needs: publish-pages
     runs-on: ubuntu-latest
     environment:
       name: github-pages
