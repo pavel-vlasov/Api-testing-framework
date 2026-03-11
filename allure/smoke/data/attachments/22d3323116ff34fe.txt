@@ -1,0 +1,4 @@
+method=GET
+path=/get
+headers={Accept=*/*, X-Correlation-Id=9985bc23-6c70-4f9e-a8d6-2b8ba7edf347, Content-Type=application/json}
+body=

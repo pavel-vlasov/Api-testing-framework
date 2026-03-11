@@ -1,0 +1,2 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","1333","GET /get should echo query parameter","Smoke Suite","Wed Mar 11 14:13:04 UTC 2026","passed","Wed Mar 11 14:13:05 UTC 2026","com.apiframework.tests.smoke.PostmanEchoSmokeTest","Smoke API Tests","com.apiframework.tests.smoke.PostmanEchoSmokeTest","shouldEchoQueryParameter"

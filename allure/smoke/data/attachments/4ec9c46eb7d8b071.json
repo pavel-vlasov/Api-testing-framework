@@ -1,0 +1,15 @@
+{
+    "args": {
+        "suite": "smoke"
+    },
+    "headers": {
+        "host": "postman-echo.com",
+        "user-agent": "Apache-HttpClient/4.5.13 (Java/21.0.10)",
+        "accept-encoding": "gzip, br",
+        "accept": "*/*",
+        "x-forwarded-proto": "https",
+        "content-type": "application/json",
+        "x-correlation-id": "9985bc23-6c70-4f9e-a8d6-2b8ba7edf347"
+    },
+    "url": "https://postman-echo.com/get?suite=smoke"
+}

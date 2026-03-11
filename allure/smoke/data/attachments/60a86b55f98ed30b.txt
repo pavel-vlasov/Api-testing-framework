@@ -1,0 +1,3 @@
+status=200
+headers={Transfer-Encoding=chunked, x-envoy-upstream-service-time=6, CF-RAY=9dab28650f41bc23-ORD, Server=cloudflare, vary=Accept-Encoding, Content-Encoding=gzip, Connection=keep-alive, Set-Cookie=***, etag=W/"14c-SHLUgGqHTi5SikVd6qh9kM/aNl0", cf-cache-status=DYNAMIC, Date=Wed, 11 Mar 2026 14:13:05 GMT, Content-Type=application/json; charset=utf-8}
+body={"args":{"suite":"smoke"},"headers":{"host":"postman-echo.com","user-agent":"Apache-HttpClient/4.5.13 (Java/21.0.10)","accept-encoding":"gzip, br","accept":"*/*","x-forwarded-proto":"https","content-type":"application/json","x-correlation-id":"9985bc23-6c70-4f9e-a8d6-2b8ba7edf347"},"url":"https://postman-echo.com/get?suite=smoke"}

@@ -1,0 +1,1 @@
+curl -X GET 'https://postman-echo.com/get?suite=smoke' -H 'Accept: */*' -H 'X-Correlation-Id: 9985bc23-6c70-4f9e-a8d6-2b8ba7edf347' -H 'Content-Type: application/json'

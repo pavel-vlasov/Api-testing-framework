@@ -1,0 +1,8 @@
+method=GET
+path=/get
+statusCode=200
+durationMs=684
+correlationId=9985bc23-6c70-4f9e-a8d6-2b8ba7edf347
+contentType=application/json; charset=utf-8
+profile=dev
+environment=<unknown>
